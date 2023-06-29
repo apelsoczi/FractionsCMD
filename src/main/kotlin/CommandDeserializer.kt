@@ -1,5 +1,6 @@
-import Command.*
 import CommandException.*
+import model.Command
+import model.Command.*
 
 /** deserialize calculator input into a [Command] */
 class CommandDeserializer {
