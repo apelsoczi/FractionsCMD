@@ -1,7 +1,5 @@
 package model
 
-import CommandException
-
 /** represent a command to send to the calculator */
 sealed class Command {
 
@@ -10,9 +8,9 @@ sealed class Command {
 
     /** performs a math function */
     data class Calculation(
-        val firstFraction: String,
+        val first: MixedNumber,
         val operation: String,
-        val secondFraction: String,
+        val second: MixedNumber,
     ) : Command()
 
     /** displays errors to the user */

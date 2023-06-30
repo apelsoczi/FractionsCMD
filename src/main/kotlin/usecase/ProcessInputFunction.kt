@@ -8,12 +8,16 @@ class ProcessInputFunction(
 ) {
 
     fun invoke(): Command {
-        println("---------------------------------")
-        println("Enter two fractions to calculate:")
+        println(LINE_DIVIDER)
+        println(INPUT_PROMPT)
         val command = commandDeserializer.deserialize(
             data = readLine() ?: ""
         )
         return command
     }
 
+    companion object {
+        val LINE_DIVIDER = "---------------------------------"
+        val INPUT_PROMPT = "Enter two fractions to calculate:"
+    }
 }

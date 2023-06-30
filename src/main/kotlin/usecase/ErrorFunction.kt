@@ -1,11 +1,15 @@
 package usecase
 
-import CommandException
+import model.CommandException
 
 class ErrorFunction {
 
     fun invoke(exception: CommandException) {
-        println("Error: ${exception.message}")
+        println("$PROMPT_ERROR ${exception.message}")
+    }
+
+    companion object {
+        val PROMPT_ERROR = "Error:"
     }
 
 }

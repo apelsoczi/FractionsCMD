@@ -1,6 +1,6 @@
 package usecase
 
-import MixedNumber
+import model.MixedNumber
 
 class CalculationFunction {
 

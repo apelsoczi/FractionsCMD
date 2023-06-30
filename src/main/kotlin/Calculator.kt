@@ -7,7 +7,6 @@ import usecase.ShutdownFunction
 
 /** The main class to execute the application */
 class Calculator(
-    private val numberSerializer: NumberSerializer,
     private val processInputFunction: ProcessInputFunction,
     private val calculationFunction: CalculationFunction,
     private val errorFunction: ErrorFunction,
@@ -27,13 +26,11 @@ class Calculator(
                 process()
             }
             is Calculation -> {
-                val first = numberSerializer.deserialize(command.firstFraction)
-                val second = numberSerializer.deserialize(command.secondFraction)
                 when {
-                    command.operation == "+" -> calculationFunction.add(first, second)
-                    command.operation == "-" -> calculationFunction.subtract(first, second)
-                    command.operation == "*" -> calculationFunction.multiply(first, second)
-                    command.operation == "/" -> calculationFunction.divide(first, second)
+                    command.operation == "+" -> calculationFunction.add(command.first, command.second)
+                    command.operation == "-" -> calculationFunction.subtract(command.first, command.second)
+                    command.operation == "*" -> calculationFunction.multiply(command.first, command.second)
+                    command.operation == "/" -> calculationFunction.divide(command.first, command.second)
                 }
                 process()
             }
