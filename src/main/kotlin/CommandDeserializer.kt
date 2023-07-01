@@ -1,7 +1,7 @@
 import model.Command
 import model.Command.*
 import model.CommandException.*
-import model.MixedNumber
+import model.toMixedNumber
 
 /** deserialize calculator input into a [Command] */
 class CommandDeserializer {
@@ -30,32 +30,19 @@ class CommandDeserializer {
         if (operator[0] !in validOperators) return Invalid(OperatorFormattingException("Not an operator ( +, -, *, / )"))
 
         // mixed numbers
-
         val first = data.substring(
             startIndex = 0,
             endIndex = indexOfOperatorStart-1,
-        ).let {
-            val numbers = it.split('&', '/').map { it.toInt() }
-            when (numbers.size) {
-                1 -> MixedNumber(whole = numbers[0])
-                2 -> MixedNumber(numerator = numbers[0], denominator = numbers[1])
-                else -> MixedNumber(whole = numbers[0], numerator = numbers[1], denominator = numbers[2])
-            }
-        }
+        ).toMixedNumber()
+
         if (first.denominator == 0 && first.numerator != 0)
             return Invalid(FractionInvalidException("${first.numerator}/${first.denominator} not a valid fraction"))
 
         val second = data.substring(
             startIndex = indexOfOperatorEnd+1,
             endIndex = data.length,
-        ).let {
-            val numbers = it.split('&', '/').map { it.toInt() }
-            when (numbers.size) {
-                1 -> MixedNumber(whole = numbers[0])
-                2 -> MixedNumber(numerator = numbers[0], denominator = numbers[1])
-                else -> MixedNumber(whole = numbers[0], numerator = numbers[1], denominator = numbers[2])
-            }
-        }
+        ).toMixedNumber()
+
         if (second.denominator == 0 && second.numerator != 0)
             return Invalid(FractionInvalidException("${second.numerator}/${second.denominator} not a valid fraction"))
 
