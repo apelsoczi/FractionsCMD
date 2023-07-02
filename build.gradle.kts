@@ -13,6 +13,7 @@ repositories {
 }
 
 dependencies {
+    api("org.apache.commons:commons-math3:3.6.1")
     testImplementation(kotlin("test"))
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.0.0")
 }

@@ -1,18 +1,32 @@
 package model
 
-import java.math.BigDecimal
+import org.apache.commons.math3.fraction.Fraction
+import org.apache.commons.math3.fraction.FractionFormat
 import kotlin.math.absoluteValue
 
 data class MixedNumber(
-    val whole: Int = 0,
-    val numerator: Int = 0,
-    val denominator: Int = 0,
+    val whole: Int,
+    val numerator: Int,
+    val denominator: Int,
 ) {
-
-    val decimal: BigDecimal
-        get() = toImproperFraction().let {
-            BigDecimal(it.numerator).divide(BigDecimal(it.denominator))
+    override fun toString(): String {
+        return if (whole == 0 && numerator == 0) {
+            whole.toString()
+        } else {
+            buildString {
+                if (whole != 0) append(whole)
+                if (numerator != 0 && denominator != 0) {
+                    if (whole != 0) append("&")
+                    append(
+                        if (whole.isNegative() && numerator.isNegative()) numerator.absoluteValue
+                        else numerator
+                    )
+                    append("/")
+                    append(denominator)
+                }
+            }
         }
+    }
 }
 
 /**
@@ -21,9 +35,28 @@ data class MixedNumber(
 fun String.toMixedNumber(): MixedNumber {
     val numbers = split('&', '/').map { it.toInt() }
     return when (numbers.size) {
-        1 -> MixedNumber(whole = numbers[0])
-        2 -> MixedNumber(numerator = numbers[0], denominator = numbers[1])
+        1 -> MixedNumber(whole = numbers[0], numerator = 0, denominator = 1)
+        2 -> MixedNumber(whole = 0, numerator = numbers[0], denominator = numbers[1])
         else -> MixedNumber(whole = numbers[0], numerator = numbers[1], denominator = numbers[2])
+    }
+}
+
+/** Convert a mixed number to a fraction */
+fun Fraction.toMixedNumber(): MixedNumber {
+    val formatted = FractionFormat.getProperInstance().format(this)
+    val parts = formatted.split(' ').filter { it != "/" }
+    return when (parts.size) {
+        3 -> MixedNumber(
+            whole = parts[0].toInt(),
+            numerator = parts[1].toInt(),
+            denominator = parts[2].toInt()
+        )
+        2 -> MixedNumber(
+            whole = 0,
+            numerator = parts[0].toInt(),
+            denominator = parts[1].toInt()
+        )
+        else -> MixedNumber(0, 0, 0)
     }
 }
 
@@ -31,116 +64,72 @@ fun String.toMixedNumber(): MixedNumber {
  * convert all scenarios of negatives and positives for whole number, numerator, denominator to
  * an improper fraction.
  */
-fun MixedNumber.toImproperFraction(): MixedNumber {
-    val fraction = with(this) {
-        if (whole.isPositive() && numerator.isPositive() && denominator.isPositive()) {
-            val numerator = multiplyAbsoluteAndAdd(this)
-            val denominator = this.denominator.absoluteValue
-            val sign = 1
-            val improperNumerator = if (sign.isPositive()) numerator * 1 else numerator * -1
-            MixedNumber(
-                numerator = improperNumerator,
-                denominator = denominator,
-            )
-        } else if (whole.isPositive() && numerator.isPositive() && denominator.isNegative()) {
-            val numerator = multiplyAbsoluteAndSubtract(this)
-            val denominator = this.denominator.absoluteValue
-            val sign = -1
-            val improperNumerator = if (sign.isPositive()) numerator * 1 else numerator * -1
-            MixedNumber(
-                numerator = improperNumerator,
-                denominator = denominator,
-            )
-        } else if (whole.isPositive() && numerator.isNegative() && denominator.isPositive()) {
-            val numerator = multiplyAbsoluteAndSubtract(this)
-            val denominator = this.denominator.absoluteValue
-            val sign = 1
-            val improperNumerator = if (sign.isPositive()) numerator * 1 else numerator * -1
-            MixedNumber(
-                numerator = improperNumerator,
-                denominator = denominator,
-            )
-        } else if (whole.isPositive() && numerator.isNegative() && denominator.isNegative()) {
-            val numerator = multiplyAbsoluteAndAdd(this)
-            val denominator = this.denominator.absoluteValue
-            val sign = -1
-            val improperNumerator = if (sign.isPositive()) numerator * 1 else numerator * -1
-            MixedNumber(
-                numerator = improperNumerator,
-                denominator = denominator,
-            )
-        } else if (whole.isNegative() && numerator.isPositive() && denominator.isPositive()) {
-            val numerator = multiplyAbsoluteAndAdd(this)
-            val denominator = this.denominator.absoluteValue
-            val sign = -1
-            val improperNumerator = if (sign.isPositive()) numerator * 1 else numerator * -1
-            MixedNumber(
-                numerator = improperNumerator,
-                denominator = denominator,
-            )
-        } else if (whole.isNegative() && numerator.isPositive() && denominator.isNegative()) {
-            val numerator = multiplyAbsoluteAndAdd(this)
-            val denominator = this.denominator.absoluteValue
-            val sign = 1
-            val improperNumerator = if (sign.isPositive()) numerator * 1 else numerator * -1
-            MixedNumber(
-                numerator = improperNumerator,
-                denominator = denominator,
-            )
-        } else if (whole.isNegative() && numerator.isNegative() && denominator.isPositive()) {
-            val numerator = multiplyAbsoluteAndSubtract(this)
-            val denominator = this.denominator.absoluteValue
-            val sign = -1
-            val improperNumerator = if (sign.isPositive()) numerator * 1 else numerator * -1
-            MixedNumber(
-                numerator = improperNumerator,
-                denominator = denominator,
-            )
-        } else { // whole.isNegative() && numerator.isNegative() && denominator.isNegative()
-            val numerator = multiplyAbsoluteAndSubtract(this)
-            val denominator = this.denominator.absoluteValue
-            val sign = 1
-            val improperNumerator = if (sign.isPositive()) numerator * 1 else numerator * -1
-            MixedNumber(
-                numerator = improperNumerator,
-                denominator = denominator,
-            )
+fun MixedNumber.toImproperFraction(): Fraction {
+    val hasWhole = whole != 0
+    val hasFraction = numerator != 0
+
+    val improperNumerator= if (hasWhole) {
+        if (hasFraction) {
+            if (whole.isPositive()) {
+                if (numerator.isPositive() && denominator.isPositive()) {
+                    (whole * denominator) + numerator
+                }
+                else if (numerator.isPositive() && denominator.isNegative()) {
+                    ((whole * denominator.absoluteValue) - numerator) * -1
+                }
+                else if (numerator.isNegative() && denominator.isPositive()) {
+                    (whole * denominator) - numerator.absoluteValue
+                }
+                else { // numerator.isNegative() && denominator.isNegative())
+                    ((whole * denominator.absoluteValue) + numerator.absoluteValue) * -1
+                }
+            }
+            else {
+                if (numerator.isPositive() && denominator.isPositive()) {
+                    ((whole.absoluteValue * denominator) + numerator) * -1
+                }
+                else if (numerator.isPositive() && denominator.isNegative()) {
+                    (whole.absoluteValue * denominator.absoluteValue) - numerator
+                }
+                else if (numerator.isNegative() && denominator.isPositive()) {
+                    (whole * denominator) + numerator.absoluteValue
+                }
+                else { // numerator.isNegative() && denominator.isNegative()
+                    (whole.absoluteValue * denominator.absoluteValue) + numerator.absoluteValue
+                }
+            }
+        }
+        else {
+            whole
         }
     }
-    return fraction
+    else {
+        if (numerator.isPositive() && denominator.isPositive()) {
+            (whole * denominator) + numerator
+        }
+        else if (numerator.isPositive() && denominator.isNegative()) {
+            (whole * denominator.absoluteValue) - numerator
+        }
+        else if (numerator.isNegative() && denominator.isPositive()) {
+            (whole * denominator) - numerator.absoluteValue
+        }
+        else { // numerator.isNegative() && denominator.isNegative())
+            (whole * denominator.absoluteValue) + numerator.absoluteValue
+        }
+    }
+
+    return Fraction(
+        improperNumerator,
+        this.denominator.absoluteValue,
+    )
 }
 
 /**
  * check if an integer is greater than or equal to 0
  */
-fun Int.isPositive() = this >= 0
+fun Int.isPositive() = this > 0
 
 /**
  * check if an integer is less than 0
  */
 fun Int.isNegative() = this < 0
-
-/**
- * Multiply the absolute value of the whole number by the absolute value of the denominator and add the
- * absolute value of the numerator.
- */
-private fun multiplyAbsoluteAndAdd(number: MixedNumber): Int {
-    val numerator = (number.whole.absoluteValue * number.denominator.absoluteValue) + number.numerator.absoluteValue
-    return numerator
-}
-
-/**
- * Multiply the absolute value of the whole number by the absolute value of the denominator and subtract the
- * absolute value of the numerator.
- */
-private fun multiplyAbsoluteAndSubtract(number: MixedNumber): Int {
-    val numerator = (number.whole.absoluteValue * number.denominator.absoluteValue) - number.numerator.absoluteValue
-    return numerator
-}
-
-/**
- * return 1 when a mixed numbers whole number can be considered positive and -1 otherwise
- */
-private fun signOfWholeNumber(number: MixedNumber): Int {
-    return if (number.whole.isPositive()) 1 else -1
-}

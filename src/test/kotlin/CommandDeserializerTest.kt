@@ -118,7 +118,7 @@ class CommandDeserializerTest {
             // then
             assert(it is Calculation)
             it as Calculation
-            assert(it.first.whole == 1 && it.first.numerator == 0 && it.first.denominator == 0)
+            assert(it.first.whole == 1 && it.first.numerator == 0 && it.first.denominator == 1)
             assert(it.second.whole == 0 && it.second.numerator == 2 && it.second.denominator == 3)
         }
     }
