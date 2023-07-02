@@ -29,3 +29,11 @@ Command line calculator. Architecture is a calculator with a use case representa
 ---
 
 ### Test
+- CalculatorTest
+- CommandDeserializerTest
+- MixedNumberTest
+- CalculationFunctionTest
+- ErrorFunctionTest
+- ProcessInputFunctionTest
+- ShutdownFunctionTest
+
