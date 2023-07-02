@@ -1,3 +1,4 @@
+import CommandDeserializer.Companion.REGEX_MIXED_NUMBER
 import model.Command.Calculation
 import model.Command.Invalid
 import org.junit.jupiter.api.BeforeEach
@@ -73,6 +74,22 @@ class CommandDeserializerTest {
         }
     }
 
+    @Test
+    fun `mixed number format is incorrect - invalid command`() {
+        // given
+        val data = listOf(
+            "1/2/3 + 1",
+            "1&&2/3 + 1",
+        )
+        // when
+        data.map {
+            deserializer.deserialize(it)
+        }.forEach {
+            // then
+            assert(it is Invalid)
+        }
+    }
+
     // endregion
 
     @Test
@@ -90,6 +107,56 @@ class CommandDeserializerTest {
         }.forEach {
             // then
             assert(it is Calculation)
+        }
+    }
+
+    @Test
+    fun `regex pattern for mixed number`() {
+        // given
+        val pattern = "^(-?\\d+)&(-?\\d+)/(-?\\d+)\$|^(-?\\d+)\$|^(-?\\d+)/(-?\\d+)\$"
+        // when
+        val impl = REGEX_MIXED_NUMBER
+        // then
+        assert(pattern == impl)
+    }
+
+    @Test
+    fun `mixed numbers with regex`() {
+        // given
+        listOf(
+            "10&2/5",
+            "10&2/-5",
+            "10&-2/5",
+            "10&-2/-5",
+            "-10&2/5",
+            "-10&2/-5",
+            "-10&-2/5",
+            "-10&-2/-5",
+            "10",
+            "-10",
+            "2/5",
+            "-2/5",
+            "2/-5",
+            "-2/-5"
+        ).map {
+            // when
+            it to it.matches(Regex(REGEX_MIXED_NUMBER))
+        }.forEach {
+            // then
+            assert(it.second)
+        }
+        // and given
+        listOf(
+            "3/1/1",
+            "10%2/5",
+            "2\\5",
+            "?10&2/5%"
+        ).map {
+            // and when
+            it to it.matches(Regex(REGEX_MIXED_NUMBER))
+        }.forEach {
+            // and then
+            assert(!it.second)
         }
     }
 

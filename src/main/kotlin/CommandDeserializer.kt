@@ -33,24 +33,32 @@ class CommandDeserializer {
         val first = data.substring(
             startIndex = 0,
             endIndex = indexOfOperatorStart-1,
-        ).toMixedNumber()
-
-        if (first.denominator == 0 && first.numerator != 0)
-            return Invalid(FractionInvalidException("${first.numerator}/${first.denominator} not a valid fraction"))
+        )
+        if (!first.matches(Regex(REGEX_MIXED_NUMBER)))
+            return Invalid(FractionInvalidException("Format input as whole number 'X' and '&' fraction 'Y/Z'"))
+        val firstMixedNumber = first.toMixedNumber()
+        if (firstMixedNumber.denominator == 0)
+            return Invalid(FractionInvalidException("${firstMixedNumber.numerator}/${firstMixedNumber.denominator} not a valid fraction"))
 
         val second = data.substring(
             startIndex = indexOfOperatorEnd+1,
             endIndex = data.length,
-        ).toMixedNumber()
-
-        if (second.denominator == 0 && second.numerator != 0)
-            return Invalid(FractionInvalidException("${second.numerator}/${second.denominator} not a valid fraction"))
+        )
+        if (!second.matches(Regex(REGEX_MIXED_NUMBER)))
+            return Invalid(FractionInvalidException("Format input as whole number 'X' and '&' fraction 'Y/Z'"))
+        val secondMixedNumber = second.toMixedNumber()
+        if (secondMixedNumber.denominator == 0)
+            return Invalid(FractionInvalidException("${secondMixedNumber.numerator}/${secondMixedNumber.denominator} not a valid fraction"))
 
         return Calculation(
-            first = first,
+            first = firstMixedNumber,
             operation = operator,
-            second = second,
+            second = secondMixedNumber,
         )
+    }
+
+    companion object {
+        val REGEX_MIXED_NUMBER = "^(-?\\d+)&(-?\\d+)/(-?\\d+)\$|^(-?\\d+)\$|^(-?\\d+)/(-?\\d+)\$"
     }
 }
 
